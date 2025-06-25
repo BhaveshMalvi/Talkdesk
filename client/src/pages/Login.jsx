@@ -14,7 +14,7 @@ import axios from "axios";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { useDispatch } from "react-redux";
-import { VisuallyHidenInput } from "../components/styles/StyledComponentS.jSX";
+import { VisuallyHidenInput } from "../components/styles/StyledComponents.jsx";
 import { bgGradient } from "../constants/color";
 import { server } from "../constants/config";
 import { userExists } from "../redux/reducers/auth";
