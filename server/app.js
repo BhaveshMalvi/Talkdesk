@@ -1,24 +1,22 @@
-import express from "express";
-import { connectDB } from "./utils/features.js";
-import dotenv from "dotenv";
-import { errorMiddleware } from "./middlewares/error.js";
+import { v2 as cloudinary } from "cloudinary";
 import cookieParser from "cookie-parser";
-import {v2 as cloudinary} from "cloudinary"
-import userRoute from "./routes/user.js";
-import chatRoute from "./routes/chat.js";
-import adminRoute from "./routes/admin.js";
+import dotenv from "dotenv";
+import express from "express";
 import { createServer } from "http";
 import { v4 as uuid } from "uuid";
+import { errorMiddleware } from "./middlewares/error.js";
+import adminRoute from "./routes/admin.js";
+import chatRoute from "./routes/chat.js";
+import userRoute from "./routes/user.js";
+import { connectDB } from "./utils/features.js";
 
-import { Server, Socket } from "socket.io";
+import cors from "cors";
+import { Server } from "socket.io";
+import { corsOptions } from "./constants/config.js";
 import { NEW_MESSAGE, NEW_MESSAGE_ALERT, START_TYPING, STOP_TYPING } from "./constants/events.js";
 import { getSockets } from "./lib/helper.js";
-import { Message } from "./models/message.js";
-import cors from "cors"
-import { createUser } from "./seeders/user.js";
-import { createGroupChat, createSingleChat } from "./seeders/chat.js";
-import { corsOptions } from "./constants/config.js";
 import { socketAuthenticator } from "./middlewares/auth.js";
+import { Message } from "./models/message.js";
 
 dotenv.config({
   path: "./.env",
@@ -137,4 +135,7 @@ server.listen(port, () => {
   console.log(`server is running PORT: ${port} in ${envMode} Mode`);
 });
 
-export { envMode, adminSecretKey, userSocketIds };
+
+
+export {server, app, adminSecretKey, envMode, userSocketIds };
+
