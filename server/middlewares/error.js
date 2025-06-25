@@ -1,4 +1,4 @@
-import { envMode } from "../app.js";
+import { envMode } from "../index.js";
 
 
 
