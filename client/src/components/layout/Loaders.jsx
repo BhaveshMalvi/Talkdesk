@@ -1,5 +1,5 @@
 import { Grid, Skeleton, Stack } from "@mui/material"
-import { BouncingSkeleton } from "../styles/StyledComponents"
+import { BouncingSkeleton } from "../styles/StyledComponents.js"
 
 
  const LayoutLoader = () => {

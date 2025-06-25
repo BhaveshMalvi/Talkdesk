@@ -12,7 +12,7 @@ import moment from "moment";
 import {
   SearchField,
   CurveButton,
-} from "../../components/styles/StyledComponents.jsx";
+} from "../../components/styles/StyledComponents.js";
 import { DoughnutChart, LineChart } from "../../components/specific/Charts";
 
 const Dashboard = () => {
