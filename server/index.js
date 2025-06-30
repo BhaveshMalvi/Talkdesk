@@ -11,9 +11,10 @@ import userRoute from "./routes/user.js";
 import { connectDB } from "./utils/features.js";
 
 import cors from "cors";
+// import { socket } from "server/router.js";
 import { Server } from "socket.io";
 import { corsOptions } from "./constants/config.js";
-import { NEW_MESSAGE, NEW_MESSAGE_ALERT, START_TYPING, STOP_TYPING } from "./constants/events.js";
+import { CHAT_JOINED, CHAT_LEAVED, NEW_MESSAGE, NEW_MESSAGE_ALERT, ONLINE_USERS, START_TYPING, STOP_TYPING } from "./constants/events.js";
 import { getSockets } from "./lib/helper.js";
 import { socketAuthenticator } from "./middlewares/auth.js";
 import { Message } from "./models/message.js";
@@ -25,9 +26,10 @@ dotenv.config({
 const mongoURL = process.env.MONGO_URI;
 const port = process.env.PORT || 3000;
 const envMode = process.env.NODE_ENV.trim() || "PRODUCTION";
-const adminSecretKey = process.env.ADMIN_SECRET_KEY || "12121212";
+const adminSecretKey = process.env.ADMIN_SECRET_KEY;
 
 const userSocketIds = new Map();
+const onlineUsers = new Set()
 
 connectDB(mongoURL);
 
@@ -45,7 +47,7 @@ cloudinary.config({
 const app = express();
 
 const server = createServer(app);
-const io = new Server(server, {cors: corsOptions});
+const io = new Server(server, { cors: corsOptions });
 
 app.set("io", io)
 
@@ -60,8 +62,8 @@ app.use("/api/v1/admin", adminRoute);
 
 io.use((socket, next) => {
   cookieParser()(
-    socket.request, 
-    socket.request.res, 
+    socket.request,
+    socket.request.res,
     async (err) => await socketAuthenticator(err, socket, next)
   )
 })
@@ -69,7 +71,7 @@ io.use((socket, next) => {
 io.on("connection", (socket) => {
   console.log("user connected", socket.id);
 
-const user = socket.user;
+  const user = socket.user;
 
   userSocketIds.set(user._id.toString(), socket.id);
 
@@ -110,23 +112,52 @@ const user = socket.user;
     }
   });
 
-  socket.on(START_TYPING, ({members, chatId})=> {
-    
+  socket.on(START_TYPING, ({ members, chatId }) => {
+
     const membersSocket = getSockets(members)
-    socket.to(membersSocket).emit(START_TYPING, {chatId})
+    socket.to(membersSocket).emit(START_TYPING, { chatId })
   })
+
+  socket.on(STOP_TYPING, ({ members, chatId }) => {
+
+    const membersSocket = getSockets(members)
+    socket.to(membersSocket).emit(STOP_TYPING, { chatId })
+  })
+
+
+  socket.on(CHAT_JOINED, ({ userId, members }) => {
+    console.log("joined", userId);
+    
+  onlineUsers.add(userId.toString())
+
+  const membersSocket = getSockets(members)
+
+  io.to(membersSocket).emit(ONLINE_USERS, Array.from(onlineUsers));
+}
+)
+
+socket.on(CHAT_LEAVED, ({ userId, members }) => {
+  console.log("leaved", userId);
   
-  socket.on(STOP_TYPING, ({members, chatId})=> {
-    
-    const membersSocket = getSockets(members)
-    socket.to(membersSocket).emit(STOP_TYPING, {chatId})
-  })
+  onlineUsers.delete(userId.toString())
+
+  const membersSocket = getSockets(members)
+  io.to(membersSocket).emit(ONLINE_USERS, Array.from(onlineUsers));
+
+
+})
+
+
 
   socket.on("disconnect", () => {
     console.log("user disconnected");
     userSocketIds.delete(user._id.toString());
+      onlineUsers.delete(user._id.toString())
+      socket.broadcast.emit(ONLINE_USERS, Array.from(onlineUsers))
   });
 });
+
+
 
 
 app.use(errorMiddleware);
@@ -137,5 +168,5 @@ server.listen(port, () => {
 
 
 
-export {server, app, adminSecretKey, envMode, userSocketIds };
+export { adminSecretKey, app, envMode, server, userSocketIds };
 

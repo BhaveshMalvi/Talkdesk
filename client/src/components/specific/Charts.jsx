@@ -1,5 +1,3 @@
-import React from "react";
-import { Line, Doughnut } from "react-chartjs-2";
 import {
   ArcElement,
   CategoryScale,
@@ -8,14 +6,11 @@ import {
   Legend,
   LinearScale,
   LineElement,
-  plugins,
   PointElement,
-  scales,
-  Tooltip,
+  Tooltip
 } from "chart.js";
-import { BorderColor } from "@mui/icons-material";
+import { Doughnut, Line } from "react-chartjs-2";
 import { getLast7Days } from "../../lib/features";
-import { orange } from "@mui/material/colors";
 
 ChartJS.register(
   CategoryScale,
@@ -62,7 +57,7 @@ const LineChart = ({value=[]}) => {
     datasets: [
       {
         data: value,
-        label: "Revenue",
+        label: "Message",
         fill: true,
         backgroundColor: "rgba(75, 192, 192,0.2)",
         borderColor: "rgba(75, 192, 192, 1)",
@@ -111,4 +106,5 @@ const DoughnutChart = ({ value = [], labels = [] }) => {
     return <Doughnut style={{zIndex:10}} data={data} options={doughnutChartOptions} />;
 };
 
-export { LineChart, DoughnutChart };
+export { DoughnutChart, LineChart };
+

@@ -140,46 +140,110 @@ const allMessages = TryCatch(async (req, res) => {
   });
 });
 
+// const getDashboardStats = TryCatch(async (req, res) => {
+//   console.log("22");
+  
+//   const [groupsCount, usersCount, messagesCount, totalChatsCount] =
+//     await Promise.all([
+//       Chat.countDocuments({ groupChat: true }),
+//       User.countDocuments(),
+//       Message.countDocuments(),
+//       Chat.countDocuments(),
+//     ]);
+
+//   const today = new Date();
+
+//   const last7Days = new Date();
+
+//   last7Days.setDate(last7Days.getDate() - 7);
+
+//   const last7DaysMessages = await Message.find({
+//     createdAt: {
+//       $gt: last7Days,
+//       $lte: today,
+//     },
+//   }).select("createdAt");
+
+//   const messages = new Array(9).fill(0);
+//   const dayInMiliSecound = 1000 * 60 * 60 * 24;
+//   last7DaysMessages.forEach((message) => {
+//     const indexApprox =
+//       (today.getTime - message.createdAt.getTime()) / dayInMiliSecound;
+
+//     const index = Math.floor(indexApprox);
+
+//     messages[10 - index]++;
+//   });
+
+//   console.log("messages", messages, last7DaysMessages);
+  
+
+//   const stats = {
+//     groupsCount,
+//     usersCount,
+//     messagesCount,
+//     totalChatsCount,
+//     messagesChart: messages,
+//   };
+
+//   console.log("22", stats, );
+  
+
+//   return res.status(200).json({
+//     success: true,
+//     stats,
+//   });
+// });
+
+
 const getDashboardStats = TryCatch(async (req, res) => {
-  const [groupsCount, usersCount, messagesCount, totalChatsCount] =
-    await Promise.all([
-      Chat.countDocuments({ groupChat: true }),
-      User.countDocuments(),
-      Message.countDocuments(),
-      Chat.countDocuments(),
-    ]);
+  // Fetch counts in parallel
+  const [groupsCount, usersCount, messagesCount, totalChatsCount] = await Promise.all([
+    Chat.countDocuments({ groupChat: true }),
+    User.countDocuments(),
+    Message.countDocuments(),
+    Chat.countDocuments(),
+  ]);
 
+  // Define date range
   const today = new Date();
+  const last7Days = new Date(today);
+  last7Days.setDate(today.getDate() - 6); // 7 days including today (0 to 6)
 
-  const last7Days = new Date();
-
-  last7Days.setDate(last7Days.getDate() - 7);
-
+  // Query messages from the last 7 days
   const last7DaysMessages = await Message.find({
     createdAt: {
-      $gt: last7Days,
-      $lte: today,
+      $gte: last7Days, // Greater than or equal to 7 days ago
+      $lte: today, // Less than or equal to today
     },
-  }).select("createdAt");
+  }).select('createdAt');
 
-  const messages = new Array(7).fill(0);
-  const dayInMiliSecound = 1000 * 60 * 60 * 24;
+  // Initialize array for 7 days (0 = 6 days ago, 6 = today)
+  const messagesChart = new Array(7).fill(0);
+  const dayInMilliseconds = 1000 * 60 * 60 * 24; // One day in milliseconds
+
+  // Bucket messages into days
   last7DaysMessages.forEach((message) => {
-    const indexApprox =
-      (today.getTime - message.createdAt.getTime()) / dayInMiliSecound;
-
-    const index = Math.floor(indexApprox);
-
-    messages[6 - index]++;
+    const timeDiff = today.getTime() - message.createdAt.getTime();
+    const daysAgo = Math.floor(timeDiff / dayInMilliseconds);
+    if (daysAgo >= 0 && daysAgo < 7) {
+      // Increment the count for the corresponding day
+      messagesChart[6 - daysAgo]++; // Reverse to have today at index 6
+    }
   });
 
+  // Prepare response
   const stats = {
     groupsCount,
     usersCount,
     messagesCount,
     totalChatsCount,
-    messagesChart: messages,
+    messagesChart,
   };
+
+  // Debug log
+  console.log('Stats:', stats);
+  console.log('Last 7 Days Messages:', last7DaysMessages.length);
 
   return res.status(200).json({
     success: true,

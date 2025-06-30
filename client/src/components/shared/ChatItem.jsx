@@ -23,11 +23,13 @@ const ChatItem = ({
 
  const dispatch = useDispatch()
  console.log('newMeessages', newMessageAlert?.count)
+ console.log("isOnline", isOnline);
+ 
   
 
   return (
     <Link to={`/chat/${_id}`}  onContextMenu = {(e) => handleDeleteChat(e , _id, groupChat)} onClick={() =>  dispatch(setIsMobile(false))}>
-     <motion.div
+     {/* <motion.div
         initial={{ opacity: 0, y: '-100%' }}
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ delay: index * 0.001 }}
@@ -39,9 +41,9 @@ const ChatItem = ({
           backgroundColor: sameSender ? 'black' : 'unset',
           color: sameSender ? 'white' : 'unset',
           position: 'relative',
-        }}
-      >
-        {/* <div 
+        }} */}
+      {/* > */}
+        <div 
         style={{
           display: 'flex',
           alignItems: 'center',
@@ -51,7 +53,7 @@ const ChatItem = ({
           color: sameSender ? 'white' : 'unset',
           position: 'relative'
         }}
-        > */}
+        >
 
       
 
@@ -68,7 +70,8 @@ const ChatItem = ({
         </Stack>
 
         {
-            isOnline && (
+            isOnline &&
+             (
                 <Box
                 sx={{
                     width:"10px",
@@ -84,8 +87,8 @@ const ChatItem = ({
             )
         }
              
-        </motion.div>
-        {/* </div> */}
+        {/* </motion.div> */}
+        </div>
 
     </Link>
   )

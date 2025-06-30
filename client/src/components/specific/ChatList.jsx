@@ -10,7 +10,8 @@ const ChatList = ({ w = "100%", chats = [], chatId, onlineUsers = [], newMessage
     handleDeleteChat,
 }) => {
 
-    console.log('count', newMessagesAlert)
+    // console.log('count', newMessagesAlert)
+    console.log('isOnline ===', onlineUsers)
     return (
         <Stack 
         // width={w}
@@ -21,7 +22,10 @@ const ChatList = ({ w = "100%", chats = [], chatId, onlineUsers = [], newMessage
                     const newMessageAlert = newMessagesAlert.find(
                         ({ chatId }) => chatId === _id
                     )
-                    const isOnline = members?.some(() => onlineUsers.includes(_id));
+                   const isOnline = members?.some(member => onlineUsers.includes(member));
+                    console.log("isOnline", isOnline, _id);
+                    
+                    
                     return <ChatItem index={index} newMessageAlert={newMessageAlert} isOnline={isOnline} avatar={avatar} name={name} _id={_id} key={_id} groupChat={groupChat} sameSender={chatId === _id} handleDeleteChat={handleDeleteChat} />
                 })
             }

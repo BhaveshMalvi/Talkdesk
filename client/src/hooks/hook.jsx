@@ -65,4 +65,44 @@ const useSocketEvents = (socket, handler) => {
     [socket, handler]
 }
 
-export {useErrors, useAsyncMutation, useSocketEvents}
+
+
+const useFetchData = (url, key, options = {}) => {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(url, {
+        ...options,
+        headers: {
+          "Content-Type": "application/json",
+          ...options.headers, // Merge with provided headers
+        },
+      });
+      // Check if response is JSON
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        const text = await response.text();
+        throw new Error(`Expected JSON, got ${contentType}: ${text.slice(0, 50)}...`);
+      }
+      const result = await response.json();
+      setData(result);
+    } catch (err) {
+      setError(err.message || "Failed to fetch data");
+      console.error("Fetch error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, [url]);
+
+  return { loading, data, error, refetch: fetchData };
+};
+
+export {useErrors, useAsyncMutation, useSocketEvents, useFetchData}

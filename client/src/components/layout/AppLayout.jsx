@@ -9,8 +9,8 @@ import Title from "../shared/Title";
 import ChatList from "../specific/ChatList";
 import Profile from "../specific/Profile.jsx";
 import Header from "./Header";
-import { NEW_MESSAGE_ALERT, NEW_REQUEST, REFETCH_CHATS } from '../../constants/events.js'
-import { useCallback, useEffect, useRef } from "react";
+import { NEW_MESSAGE_ALERT, NEW_REQUEST, ONLINE_USERS, REFETCH_CHATS } from '../../constants/events.js'
+import { useCallback, useEffect, useRef, useState } from "react";
 import { incrementNotification, setNewMessagesAlert } from "../../redux/reducers/chat.js";
 import { getOrSaveFromStorage } from "../../lib/features.js";
 import DeleteChatMenu from "../../dialogs/DeleteChatMenu.jsx";
@@ -27,6 +27,8 @@ const AppLayout = () => (WrapedComponent) => {
 
     // +++++++ implement socket
     const socket = getSocket()
+
+    const [onlineUsers, setOnlineUsers] = useState([])
 
 
     // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -69,6 +71,13 @@ const AppLayout = () => (WrapedComponent) => {
       dispatch(incrementNotification())
     }, [dispatch])
 
+
+    const onlineUsersListener = useCallback((data) => {
+      console.log(" online user data" ,data);
+      
+      setOnlineUsers(data)
+    }, [])
+
     const refetchListener = useCallback(() => {
       refetch()
       navigate("/")
@@ -79,7 +88,9 @@ const AppLayout = () => (WrapedComponent) => {
       [NEW_MESSAGE_ALERT]: newMessageAlertListener,
       [NEW_REQUEST]: newRequestListener,
       [REFETCH_CHATS]: refetchListener,
+      [ONLINE_USERS]: onlineUsersListener,
     }
+
     useSocketEvents(socket, eventHandlers)
 
 
@@ -99,7 +110,7 @@ const AppLayout = () => (WrapedComponent) => {
                 chatId={chatId}
                 handleDeleteChat={handleDeleteChat}
                 newMessagesAlert={newMessagesAlert}
-                onlineUsers={["1", "2"]}
+                onlineUsers={onlineUsers}
               />
             </Drawer>
           )
@@ -133,7 +144,7 @@ const AppLayout = () => (WrapedComponent) => {
                 chatId={chatId}
                 handleDeleteChat={handleDeleteChat}
                 newMessagesAlert={newMessagesAlert}
-                onlineUsers={["1", "2"]}
+                onlineUsers={onlineUsers}
               />
             )}
           </Box>

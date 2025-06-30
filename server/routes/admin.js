@@ -16,6 +16,7 @@ app.get("/logout", adminLogout)
 // only admin can access these route
 app.use(adminOnly)
 
+app.get("/stats", getDashboardStats)
 app.get("/", getAdminData)
 
 
@@ -23,6 +24,5 @@ app.get("/users", allUsers)
 app.get("/chats", allChats )
 app.get("/messages", allMessages)
 
-app.get("/stats", getDashboardStats)
 
 export default app;

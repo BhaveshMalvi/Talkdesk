@@ -1,9 +1,10 @@
-import { Avatar, Stack } from "@mui/material";
-import React, { useEffect, useState } from "react";
+import { Avatar, Skeleton, Stack } from "@mui/material";
+import { useEffect, useState } from "react";
 import AdminLayout from "../../components/layout/AdminLayout";
+import AvatarCard from '../../components/shared/AvatarCard';
 import Table from "../../components/shared/Table";
-import AvatarCard from '../../components/shared/AvatarCard'
-import { dashboardData } from "../../constants/sampleData";
+import { server } from "../../constants/config";
+import { useErrors, useFetchData } from "../../hooks/hook";
 import { transformImage } from "../../lib/features";
 
 
@@ -28,13 +29,19 @@ const columns = [
     headerClassName: "table-header",
   },
   {
+    field: "groupChat",
+    headerName: "Group",
+    width: 100,
+    headerClassName: "table-header",
+  },
+  {
     field: "totalMembers",
     headerName: "Total Members",
     width: 250,
     headerClassName: "table-header",
   },
   {
-    field: "members",
+    field: "member",
     headerName: "Members",
     width: 400,
     headerClassName: "table-header",
@@ -65,17 +72,40 @@ const columns = [
 const ChatManagement = () => {
   const [rows, setRows] = useState([]);
 
+    const { loading, data, error } = useFetchData(
+    `${server}/api/v1/admin/chats`,
+    "chats",
+    {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include", // Include credentials (cookies) in the request
+    }
+  );
+
+
+
+
+  useErrors([{
+    isError: error,
+    error: error
+  }])
+
+  console.log("data", data);
+
   useEffect(() => {
-    setRows(dashboardData.chats.map(i => ({
+ if (data) {
+     setRows(data.chats.map(i => ({
       ...i,
       id: i._id,
-      avatar: i.avatar.map(i => transformImage(i, 50)),
-      members: i.members.map(i => transformImage(i.avatar, 50))
+      avatar: i.avatar?.map(i => transformImage(i, 50)),
+      members: i.member?.map(i => transformImage(i.avatar, 50))
 
     })))
-  }, []);
+ }
+  }, [data]);
 
-  return (
+  return loading ? <Skeleton /> :   (
     <AdminLayout>
       <Table heading={"All Chats"} columns={columns} rows={rows} />
     </AdminLayout>

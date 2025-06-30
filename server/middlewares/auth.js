@@ -12,48 +12,63 @@ const isAuthenticated = (req, res, next) => {
     return next(new ErrorHandler("Please Login to access this route", 401));
 
   const decodedData = jwt.verify(token, process.env.JWT_SECRET);
-  
+
   req.user = decodedData._id;
- 
+
   next();
 };
 
 
 const adminOnly = (req, res, next) => {
+  
 
-  const token = req.cookies["pakau-admin-token"];
-  if (!token)
-    return next(new ErrorHandler("Only Admin can access this route", 401));
-
-  if (!token || typeof token !== 'string') {
-    return next(new ErrorHandler("Only Admin can access this route", 401));
-  }
-  const secretKey = jwt.verify(token, process.env.JWT_SECRET);
-  const isMatched = secretKey === adminSecretKey;
-
-if (!isMatched) return next(new ErrorHandler("Only Admin can access this route", 401));
-
-  req.user = secretKey._id;
+ try {
+   const token = req.cookies["pakau-admin-token"];
+   if (!token)
+     return next(new ErrorHandler("Only Admin can access this route", 401));
+ 
+   if (!token || typeof token !== 'string') {
+     return next(new ErrorHandler("Only Admin can access this route", 401));
+   }
+   const secretKey = jwt.verify(token, process.env.JWT_SECRET);
+   console.log("secret key", secretKey,  adminSecretKey);
    
-  next();
+   const isMatched = secretKey === adminSecretKey;
+
+   console.log("is match", isMatched);
+   
+ 
+   if (!isMatched) return next(new ErrorHandler("Only Admin can access this route", 401));
+    else
+     {
+      console.log("22222");
+       req.user = secretKey._id;
+       return next();
+      }
+ 
+   
+ } catch (error) {
+  console.log(err);
+  
+ }
 };
 
-const socketAuthenticator = async(err, socket, next) => {
+const socketAuthenticator = async (err, socket, next) => {
   try {
     if (err) return next(err);
-    
+
     const authToken = socket.request.cookies[PAKAU_TOKEN];
-    if (!authToken)  return next(new ErrorHandler("Please login to access this route", 401))
+    if (!authToken) return next(new ErrorHandler("Please login to access this route", 401))
 
-      const decodedData = jwt.verify(authToken, process.env.JWT_SECRET)
+    const decodedData = jwt.verify(authToken, process.env.JWT_SECRET)
 
-      const user = await User.findById(decodedData._id)
-      if (!user) return next(new ErrorHandler("Please login to access this route", 401))
+    const user = await User.findById(decodedData._id)
+    if (!user) return next(new ErrorHandler("Please login to access this route", 401))
 
-      socket.user = user
+    socket.user = user
 
-      return next()
-    
+    return next()
+
   } catch (error) {
     console.log('error', error)
     return next(new ErrorHandler("Please login to access this route", 401))
@@ -61,4 +76,4 @@ const socketAuthenticator = async(err, socket, next) => {
 }
 
 
-export { isAuthenticated, adminOnly , socketAuthenticator};
+export { isAuthenticated, adminOnly, socketAuthenticator };
